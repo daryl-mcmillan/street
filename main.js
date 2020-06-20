@@ -33,8 +33,10 @@ async function run() {
 		}
 	]);
 
-	const shader = canvas.createShaderMaterial(
-		`
+	const shader = canvas.createShaderMaterial({
+		attributes: [ "aPosition", "aVelocity", "aLastUpdate", "aColor" ],
+		uniforms: [ "uTime", "uProjection" ],
+		vertexShader: `
 			attribute vec2 aPosition;
 			attribute vec2 aVelocity;
 			attribute float aLastUpdate;
@@ -51,18 +53,14 @@ async function run() {
 				vColor = aColor;
 			}
 		`,
-		`
-		varying lowp vec3 vColor;
+			fragmentShader: `
+			varying lowp vec3 vColor;
 
-		void main(void) {
-			gl_FragColor = vec4(vColor, 1.0);
-		}
+			void main(void) {
+				gl_FragColor = vec4(vColor, 1.0);
+			}
 		`
-	);
-	shader.enableAttribute("aPosition");
-	shader.enableAttribute("aVelocity");
-	shader.enableAttribute("aLastUpdate");
-	shader.enableAttribute("aColor");
+	});
 	
 	const startTime = performance.now();
 	function draw() {
@@ -73,7 +71,6 @@ async function run() {
 	}
 	draw();
 
-	console.log( "test" );
 }
 
 run();

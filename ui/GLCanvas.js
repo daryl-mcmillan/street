@@ -26,10 +26,10 @@ export default class Canvas {
 			width: width,
 			height: height
 		});
-		
+
 	}
-	createShaderMaterial( vertexScript, fragmentScript ) {
-		return ShaderMaterial.create( this._gl, vertexScript, fragmentScript );
+	createShaderMaterial( opts ) {
+		return ShaderMaterial.create( this._gl, opts );
 	}
 	setData( entities ) {
 		this._setData( entities );
@@ -69,14 +69,14 @@ export default class Canvas {
 
 		shader.use();
 
-		gl.uniform1f(shader.getUniformLocation("uTime"), t);
-		gl.uniformMatrix4fv(shader.getUniformLocation("uProjection"), false, transform.data );
+		gl.uniform1f(shader.uniforms.uTime, t);
+		gl.uniformMatrix4fv(shader.uniforms.uProjection, false, transform.data );
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, displayList.buffer);
-		gl.vertexAttribPointer(shader.getAttribLocation("aPosition"), 2, gl.FLOAT, false, 4*8, 0);
-		gl.vertexAttribPointer(shader.getAttribLocation("aVelocity"), 2, gl.FLOAT, false, 4*8, 4*2);
-		gl.vertexAttribPointer(shader.getAttribLocation("aLastUpdate"), 1, gl.FLOAT, false, 4*8, 4*4);
-		gl.vertexAttribPointer(shader.getAttribLocation("aColor"), 3, gl.FLOAT, false, 4*8, 4*5);
+		gl.vertexAttribPointer(shader.attributes.aPosition, 2, gl.FLOAT, false, 4*8, 0);
+		gl.vertexAttribPointer(shader.attributes.aVelocity, 2, gl.FLOAT, false, 4*8, 4*2);
+		gl.vertexAttribPointer(shader.attributes.aLastUpdate, 1, gl.FLOAT, false, 4*8, 4*4);
+		gl.vertexAttribPointer(shader.attributes.aColor, 3, gl.FLOAT, false, 4*8, 4*5);
 		gl.drawArrays(gl.POINTS, 0, displayList.bufferLength);
 	}
 }

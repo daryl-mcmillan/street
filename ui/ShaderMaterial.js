@@ -9,23 +9,21 @@ function createShader( gl, type, script ) {
 }
 
 export default class ShaderMaterial {
-	constructor( gl, shader ) {
+	constructor( gl, shader, attributes, uniforms ) {
 		this._gl = gl;
 		this._shader = shader;
+		this.attributes = attributes;
+		this.uniforms = uniforms;
 	}
 	use() {
 		this._gl.useProgram( this._shader );
 	}
-	enableAttribute( name ) {
-		this._gl.enableVertexAttribArray(this.getAttribLocation(name));
-	}
-	getAttribLocation( name ) {
-		return this._gl.getAttribLocation( this._shader, name );
-	}
-	getUniformLocation( name ) {
-		return this._gl.getUniformLocation( this._shader, name );
-	}
-	static create( gl, vertexShader, fragmentShader ) {
+	static create( gl, opts ) {
+		const vertexShader = opts.vertexShader;
+		const fragmentShader = opts.fragmentShader;
+		const attributeNames = opts.attributes || [];
+		const uniformNames = opts.uniforms || [];
+
 		const shaderProgram = gl.createProgram();
 		gl.attachShader( shaderProgram, createShader( gl, gl.VERTEX_SHADER, vertexShader ) );
 		gl.attachShader( shaderProgram, createShader( gl, gl.FRAGMENT_SHADER, fragmentShader ) );
@@ -33,6 +31,17 @@ export default class ShaderMaterial {
 		if( !gl.getProgramParameter( shaderProgram, gl.LINK_STATUS ) ) {
 			throw new Error( "Could not initialise shaders" );
 		}
-		return new ShaderMaterial( gl, shaderProgram );
+		gl.useProgram( shaderProgram );
+		const attributes = {};
+		attributeNames.forEach( name => {
+			const location = gl.getAttribLocation( shaderProgram, name );
+			gl.enableVertexAttribArray( location );
+			attributes[ name ] = location;
+		} );
+		const uniforms = {};
+		uniformNames.forEach( name => {
+			uniforms[ name ] = gl.getUniformLocation( shaderProgram, name );
+		} );
+		return new ShaderMaterial( gl, shaderProgram, attributes, uniforms );
 	}
 }
