@@ -34,34 +34,27 @@ export default class Canvas {
 	setData( entities ) {
 		this._setData( entities );
 	}
-	createDisplayList( entities ) {
+	createDisplayList( drawType, itemCount, data ) {
 		const gl = this._gl;
-		const data = [];
-		var bufferLength = 0;
-		entities.forEach( entity => {
-			data.push( entity.position.x );
-			data.push( entity.position.y );
-			data.push( entity.velocity.x );
-			data.push( entity.velocity.y );
-			data.push( entity.lastUpdate );
-			data.push( entity.color.r );
-			data.push( entity.color.g );
-			data.push( entity.color.b );
-			bufferLength += 1;
-		});
+		const typeMap = {
+			POINTS: gl.POINTS,
+			TRIANGLES: gl.TRIANGLES
+		};
 		const buffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
 		return {
 			buffer: buffer,
-			bufferLength: bufferLength,
-			drawType: gl.POINTS
+			bufferLength: itemCount,
+			drawType: typeMap[ drawType ]
 		};
 	}
 	clear() {
 		const gl = this._gl;
 		gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		gl.enable(gl.CULL_FACE);
+		gl.cullFace(gl.BACK);
 	}
 	draw( t, shader, displayList ) {
 		const gl = this._gl;
@@ -72,12 +65,17 @@ export default class Canvas {
 
 		gl.uniform1f(shader.uniforms.uTime, t);
 		gl.uniformMatrix4fv(shader.uniforms.uProjection, false, transform.data );
+		const angle = t / 2;
+		const light = [
+			0.707 * Math.sin( angle ),
+			0.707 * Math.cos( angle ),
+			0.707
+		];
+		gl.uniform3fv(shader.uniforms.uLight, light );
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, displayList.buffer);
-		gl.vertexAttribPointer(shader.attributes.aPosition, 2, gl.FLOAT, false, 4*8, 0);
-		gl.vertexAttribPointer(shader.attributes.aVelocity, 2, gl.FLOAT, false, 4*8, 4*2);
-		gl.vertexAttribPointer(shader.attributes.aLastUpdate, 1, gl.FLOAT, false, 4*8, 4*4);
-		gl.vertexAttribPointer(shader.attributes.aColor, 3, gl.FLOAT, false, 4*8, 4*5);
+		gl.vertexAttribPointer(shader.attributes.aPosition, 3, gl.FLOAT, false, 4*6, 0);
+		gl.vertexAttribPointer(shader.attributes.aNormal, 3, gl.FLOAT, false, 4*6, 4*3);
 		gl.drawArrays(displayList.drawType, 0, displayList.bufferLength);
 	}
 }

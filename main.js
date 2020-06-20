@@ -6,54 +6,45 @@ async function sleep( ms ) {
 
 async function run() {
 	const canvas = new GLCanvas( document.body );
-	const displayList = canvas.createDisplayList([
-		{
-			position: { x:0.5, y:0.5 },
-			velocity: { x:0.5, y:0.5 },
-			lastUpdate: 0,
-			color: { r:1, g:0, b:0 }
-		},
-		{
-			position: { x:-0.5, y:0.5 },
-			velocity: { x:0.5, y:0.5 },
-			lastUpdate: 0,
-			color: { r:1, g:0, b:0 }
-		},
-		{
-			position: { x:-0.5, y:-0.5 },
-			velocity: { x:0.5, y:0.5 },
-			lastUpdate: 0,
-			color: { r:1, g:0, b:0 }
-		},
-		{
-			position: { x:0.5, y:-0.5 },
-			velocity: { x:0.5, y:0.5 },
-			lastUpdate: 0,
-			color: { r:1, g:0, b:0 }
-		}
+	const displayList = canvas.createDisplayList( 'TRIANGLES', 12, [
+		5, 5, 0,  0, 0.707, -0.707,
+		-5, 5, 0, 0, 0.707, -0.707,
+		0, 0, -5, 0, 0.707, -0.707,
+		
+		0, 0, -5, 0.707, 0, -0.707,
+		5, -5, 0, 0.707, 0, -0.707,
+		5, 5, 0,  0.707, 0, -0.707,
+
+		0, 0, -5,  0, -0.707, -0.707,
+		-5, -5, 0, 0, -0.707, -0.707,
+		5, -5, 0,  0, -0.707, -0.707,
+
+		0, 0, -5,  -0.707, 0, -0.707,
+		-5, 5, 0,  -0.707, 0, -0.707,
+		-5, -5, 0, -0.707, 0, -0.707,
 	]);
 
 	const shader = canvas.createShaderMaterial({
-		attributes: [ "aPosition", "aVelocity", "aLastUpdate", "aColor" ],
-		uniforms: [ "uTime", "uProjection" ],
+		attributes: [ "aPosition", "aNormal" ],
+		uniforms: [ "uTime", "uProjection", "uLight" ],
 		vertexShader: `
-			attribute vec2 aPosition;
-			attribute vec2 aVelocity;
-			attribute float aLastUpdate;
-			attribute vec3 aColor;
+			attribute mediump vec3 aPosition;
+			attribute mediump vec3 aNormal;
 
 			uniform float uTime;
+			uniform vec3 uLight;
 			uniform mat4 uProjection;
 
 			varying lowp vec3 vColor;
 
 			void main(void) {
-				gl_Position = uProjection * vec4( aPosition + aVelocity * (uTime - aLastUpdate), 0, 1.0 );
+				gl_Position = uProjection * vec4( aPosition, 1.0 );
 				gl_PointSize = 100.0 / gl_Position.w;
-				vColor = aColor;
+				vColor = -dot(aNormal, uLight) * vec3( 1.0, 1.0, 1.0 );
 			}
 		`,
-			fragmentShader: `
+		fragmentShader: `
+
 			varying lowp vec3 vColor;
 
 			void main(void) {
