@@ -55,12 +55,36 @@ export default class Matrix {
 			x, y, z, 1
 		]);
 	}
+	static rotatez( angle ) {
+		return new Matrix([
+			Math.cos(angle), Math.sin(angle), 0, 0,
+			-Math.sin(angle), Math.cos(angle), 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		]);
+	}
+	static rotatex( angle ) {
+		return new Matrix([
+			1, 0, 0, 0,
+			0, Math.cos(angle), Math.sin(angle), 0,
+			0, -Math.sin(angle), Math.cos(angle), 0,
+			0, 0, 0, 1
+		]);
+	}
+	static rotatey( angle ) {
+		return new Matrix([
+			Math.cos(angle), 0, -Math.sin(angle), 0,
+			0, 1, 0, 0,
+			Math.sin(angle), 0, Math.cos(angle), 0,
+			0, 0, 0, 1
+		]);
+	}
 	static project(opts) {
 		const width = opts.width | 1;
 		const height = opts.height | 1;
 		const near = opts.near ? opts.near : 1;
-		const far = opts.far ? opts.far : 1000;
-		const fov = opts.fov | Math.PI/2;
+		const far = opts.far ? opts.far : 10000;
+		const fov = opts.fov ? opts.fov : Math.PI/4;
 
 		const aspect = width/height;
 		const verticalSize = Math.tan( fov ) * near * 2;

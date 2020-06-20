@@ -24,7 +24,8 @@ export default class Canvas {
 
 		this._projection = Matrix.project({
 			width: width,
-			height: height
+			height: height,
+			fov: Math.PI/16
 		});
 
 	}
@@ -53,24 +54,28 @@ export default class Canvas {
 		const gl = this._gl;
 		gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		gl.enable(gl.DEPTH_TEST);
 		gl.enable(gl.CULL_FACE);
 		gl.cullFace(gl.BACK);
 	}
 	draw( t, shader, displayList ) {
 		const gl = this._gl;
 
-		const transform = this._projection.matrixMult( Matrix.translate( 0, 0, -10 ) );
+		const transform = this._projection.matrixMult( Matrix.translate( 0, 0, -100 ) ).matrixMult( Matrix.rotatex(-1.2) ).matrixMult( Matrix.rotatez(0.4) );
 
 		shader.use();
 
 		gl.uniform1f(shader.uniforms.uTime, t);
 		gl.uniformMatrix4fv(shader.uniforms.uProjection, false, transform.data );
-		const angle = t / 2;
+		const angle = t;
 		const light = [
 			0.707 * Math.sin( angle ),
 			0.707 * Math.cos( angle ),
 			0.707
 		];
+		//light[0] = 0;
+		//light[1] = 0;
+		//light[2] = 1;
 		gl.uniform3fv(shader.uniforms.uLight, light );
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, displayList.buffer);

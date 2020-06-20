@@ -36,7 +36,6 @@ function triangle( pt1, pt2, pt3 ) {
 		builder.pushFloat32( normal.y );
 		builder.pushFloat32( normal.z );
 	}
-	console.log( normal );
 	return {
 		write: function( bufferBuilder ) {
 			writePoint( pt1, bufferBuilder );
@@ -46,31 +45,94 @@ function triangle( pt1, pt2, pt3 ) {
 	};
 }
 
+function box(x1, x2, y1, y2, z1, z2) {
+	return {
+		write: function( bufferBuilder ) {
+			triangle(
+				{ x:x1, y:y2, z:z1 },
+				{ x:x2,  y:y2, z:z1 },
+				{ x:x1,  y:y1, z:z1 }
+			).write( bufferBuilder );
+			triangle(
+				{ x:x2,  y:y1, z:z1 },
+				{ x:x1,  y:y1, z:z1 },
+				{ x:x2, y:y2, z:z1 }
+			).write( bufferBuilder );
+			triangle(
+				{ x:x2, y:y1, z:z1 },
+				{ x:x2, y:y2, z:z1 },
+				{ x:x2, y:y1, z:z2 }
+			).write( bufferBuilder );
+			triangle(
+				{ x:x2, y:y2, z:z2 },
+				{ x:x2, y:y1, z:z2 },
+				{ x:x2, y:y2, z:z1 },
+			).write( bufferBuilder );
+			triangle(
+				{ x:x1, y:y2, z:z1 },
+				{ x:x1, y:y1, z:z1 },
+				{ x:x1, y:y1, z:z2 }
+			).write( bufferBuilder );
+			triangle(
+				{ x:x1, y:y1, z:z2 },
+				{ x:x1, y:y2, z:z2 },
+				{ x:x1, y:y2, z:z1 },
+			).write( bufferBuilder );
+			triangle(
+				{ x:x1, y:y1, z:z1 },
+				{ x:x2, y:y1, z:z1 },
+				{ x:x1, y:y1, z:z2 }
+			).write( bufferBuilder );
+			triangle(
+				{ x:x2, y:y1, z:z2 },
+				{ x:x1, y:y1, z:z2 },
+				{ x:x2, y:y1, z:z1 },
+			).write( bufferBuilder );
+			triangle(
+				{ x:x2, y:y2, z:z1 },
+				{ x:x1, y:y2, z:z1 },
+				{ x:x1, y:y2, z:z2 }
+			).write( bufferBuilder );
+			triangle(
+				{ x:x1, y:y2, z:z2 },
+				{ x:x2, y:y2, z:z2 },
+				{ x:x2, y:y2, z:z1 },
+			).write( bufferBuilder );
+			triangle(
+				{ x:x2,  y:y2, z:z2 },
+				{ x:x1, y:y2, z:z2 },
+				{ x:x1,  y:y1, z:z2 }
+			).write( bufferBuilder );
+			triangle(
+				{ x:x1,  y:y1, z:z2 },
+				{ x:x2,  y:y1, z:z2 },
+				{ x:x2, y:y2, z:z2 }
+			).write( bufferBuilder );
+		}
+	}
+}
+
+function house(x, y, z ) {
+	return {
+		write: function( bufferBuilder ) {
+			box( x-5, x+5, y-5, y+5, z+0, z+5 ).write( bufferBuilder );
+			box( x-5.5, x+5.5, y-5.5, y+5.5, z+5, z+6 ).write( bufferBuilder );
+		}
+	};
+}
+
 async function run() {
 	const canvas = new GLCanvas( document.body );
-	const bufferBuilder = new BufferBuilder( 6 * 4 * 12 );
-	triangle(
-		{ x:5,  y:5, z:0 },
-		{ x:-5, y:5, z:0 },
-		{ x:0,  y:0, z:-5 }
-	).write( bufferBuilder );
-	triangle(
-		{ x:0,  y:0, z:-5 },
-		{ x:5, y:-5, z:0 },
-		{ x:5,  y:5, z:0 }
-	).write( bufferBuilder );
-	triangle(
-		{ x:0,  y:0, z:-5 },
-		{ x:-5, y:-5, z:0 },
-		{ x:5,  y:-5, z:0 }
-	).write( bufferBuilder );
-	triangle(
-		{ x:0,  y:0, z:-5 },
-		{ x:-5, y:5, z:0 },
-		{ x:-5,  y:-5, z:0 }
-	).write( bufferBuilder );
-	
-	const displayList = canvas.createDisplayList( 'TRIANGLES', 12, bufferBuilder.buffer );
+	const bufferBuilder = new BufferBuilder( 64000000 );
+	var points = 0;
+	for( var x=0; x<100; x++ ) {
+		for( var y=0; y<100; y++ ) {
+			house(x*40-80,y*30-50,0).write( bufferBuilder );
+			points += 72;
+		}
+	}
+
+	const displayList = canvas.createDisplayList( 'TRIANGLES', points, bufferBuilder.buffer );
 
 	const shader = canvas.createShaderMaterial({
 		attributes: [ "aPosition", "aNormal" ],
