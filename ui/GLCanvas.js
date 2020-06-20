@@ -54,7 +54,8 @@ export default class Canvas {
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
 		return {
 			buffer: buffer,
-			bufferLength: bufferLength
+			bufferLength: bufferLength,
+			drawType: gl.POINTS
 		};
 	}
 	clear() {
@@ -77,6 +78,6 @@ export default class Canvas {
 		gl.vertexAttribPointer(shader.attributes.aVelocity, 2, gl.FLOAT, false, 4*8, 4*2);
 		gl.vertexAttribPointer(shader.attributes.aLastUpdate, 1, gl.FLOAT, false, 4*8, 4*4);
 		gl.vertexAttribPointer(shader.attributes.aColor, 3, gl.FLOAT, false, 4*8, 4*5);
-		gl.drawArrays(gl.POINTS, 0, displayList.bufferLength);
+		gl.drawArrays(displayList.drawType, 0, displayList.bufferLength);
 	}
 }
